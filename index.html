@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel - Image Upload & Color Customization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+    input, button {
+      margin: 10px;
+      padding: 6px 12px;
+    }
+    .image-gallery img {
+      width: 200px;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 30px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+      width: 90%;
+      max-width: 600px;
+    }
+    .section h2 {
+      margin-bottom: 10px;
+    }
+    .status {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🖼️ Image Upload Section -->
+  <div class="section">
+    <h2>🖼️ Upload Image to Cloudinary</h2>
+    <form id="uploadForm">
+      <input type="file" name="image" id="imageInput" required />
+      <button type="submit">Upload</button>
+    </form>
+
+    <h3>Uploaded Images</h3>
+    <div class="image-gallery" id="gallery"></div>
+  </div>
+
+  <!-- 🎨 Home Background Color Customization -->
+  <div class="section">
+    <h2>🎨 Set Home Background Color</h2>
+    <input type="color" id="colorPickerHome" />
+    <button onclick="saveHomeColor()">Save Home Color</button>
+    <p id="colorMessageHome"></p>
+  </div>
+
+  <!-- 🎨 Profile Background Color Customization -->
+  <div class="section">
+    <h2>🎨 Set Profile Background Color</h2>
+    <input type="color" id="colorPickerProfile" />
+
+    <button onclick="updateProfileColor()">Update Color</button>
+    <div class="status" id="statusProfile"></div>
+  </div>
+
+  <a href="cart.html">Cart</a>
+  <a href="aboutus.html">About</a>
+  <a href="contact.html">Contact</a>
+  <a href="product.html">product</a>
+
+  <script>
+    const gallery = document.getElementById('gallery');
+
+    // 🔼 Upload image
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('imageInput');
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+
+      try {
+        await fetch('http://localhost:2000/upload', {
+          method: 'POST',
+          body: formData
+        });
+        alert('✅ Upload successful!');
+        loadImages();
+      } catch (err) {
+        alert('❌ Upload failed!');
+        console.error(err);
+      }
+    });
+
+    // 🔁 Load images
+    async function loadImages() {
+      gallery.innerHTML = '';
+      const response = await fetch('http://localhost:2000/images');
+      const images = await response.json();
+      images.forEach(img => {
+        const container = document.createElement('div');
+        container.style.display = 'inline-block';
+
+        const imageElement = document.createElement('img');
+        imageElement.src = img.imageUrl;
+        imageElement.alt = 'Uploaded Image';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerText = 'Delete';
+        deleteBtn.style.display = 'block';
+        deleteBtn.onclick = () => deleteImage(img._id, img.publicId);
+
+        container.appendChild(imageElement);
+        container.appendChild(deleteBtn);
+        gallery.appendChild(container);
+      });
+    }
+
+    // ❌ Delete image
+    async function deleteImage(mongoId, cloudinaryId) {
+      try {
+        const response = await fetch(`http://localhost:2000/delete/${mongoId}/${cloudinaryId}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+        alert(result.message);
+        loadImages();
+      } catch (err) {
+        alert('❌ Delete failed!');
+        console.error(err);
+      }
+    }
+
+    // 🎨 Save home color
+    function saveHomeColor() {
+      const color = document.getElementById("colorPickerHome").value;
+      fetch("http://localhost:2000/colorhome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ color })
+      })
+        .then(response => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById("colorMessageHome").textContent = "✅ Home color saved!";
+          document.getElementById("colorMessageHome").style.color = "green";
+        })
+        .catch(error => {
+          document.getElementById("colorMessageHome").textContent = "❌ Failed to save home color.";
+          document.getElementById("colorMessageHome").style.color = "red";
+          console.error("Error saving home color:", error);
+        });
+    }
+
+    // 🎨 Save profile color
+      function updateProfileColor() {
+  const color = document.getElementById("colorPickerProfile").value;
+  fetch("http://localhost:2000/colorprofile", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ color })
+  })
+    .then(response => {
+      if (!response.ok) throw new Error("Network response was not ok");
+      return response.json();
+    })
+    .then(data => {
+      document.getElementById("statusProfile").textContent = "✅ Profile color saved!";
+      document.getElementById("statusProfile").style.color = "green";
+    })
+    .catch(error => {
+      document.getElementById("statusProfile").textContent = "❌ Failed to save profile color.";
+      document.getElementById("statusProfile").style.color = "red";
+      console.error("Error saving profile color:", error);
+    });
+}
+
+
+    // 🔃 Load both colors on page load
+    window.onload = () => {
+      fetch('http://localhost:2000/colorhome')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('colorPickerHome').value = data.color;
+        });
+
+      fetch('http://localhost:2000/colorprofile')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('colorPickerProfile').value = data.color;
+        });
+
+      loadImages();
+    };
+  </script>
+</body>
+</html>

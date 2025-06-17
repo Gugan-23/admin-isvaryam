@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cart Page - Color Customization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      text-align: center;
+      background-color: #ffffff;
+    }
+    .section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 50px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>🛒 Customize Cart Background Color</h2>
+    <input type="color" id="colorPickerCart" />
+    <button onclick="saveCartColor()">Save Cart Color</button>
+    <div class="status" id="colorMessageCart"></div>
+  </div>
+
+ <script>
+  function saveCartColor() {
+    const color = document.getElementById("colorPickerCart").value;
+    console.log("🎯 Saving color:", color);
+
+    fetch("http://localhost:2000/colorcart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ color })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+      })
+      .then(data => {
+        console.log("✅ Saved color:", data.color);
+        document.getElementById("colorMessageCart").textContent = "✅ Cart color saved!";
+        document.body.style.backgroundColor = data.color;
+      })
+      .catch(err => {
+        document.getElementById("colorMessageCart").textContent = "❌ Failed to save cart color.";
+        console.error("Error saving cart color:", err);
+      });
+  }
+
+  window.onload = () => {
+    console.log("🔁 Page loaded, fetching saved cart color...");
+    fetch("http://localhost:2000/colorcart")
+      .then(res => {
+        if (!res.ok) throw new Error("Network error");
+        return res.json();
+      })
+      .then(data => {
+        console.log("🎨 Fetched color on load:", data.color);
+        const colorPicker = document.getElementById("colorPickerCart");
+        colorPicker.value = data.color;
+        document.body.style.backgroundColor = data.color;
+      })
+      .catch(err => {
+        console.error("Error loading cart color:", err);
+      });
+  };
+</script>
+</body>
+</html>

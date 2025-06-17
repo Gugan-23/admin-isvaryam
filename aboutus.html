@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About Us - Color Customization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      text-align: center;
+      background-color: #ffffff;
+    }
+    .section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 50px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>🎨 Customize About Us Background Color</h2>
+    <input type="color" id="colorPickerAbout" />
+    <button onclick="saveAboutColor()">Save About Color</button>
+    <div class="status" id="colorMessageAbout"></div>
+  </div>
+
+  <script>
+    // ✅ Save About Color to Server
+    function saveAboutColor() {
+      const color = document.getElementById("colorPickerAbout").value;
+      fetch("http://localhost:2000/colorabout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ color })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("colorMessageAbout").textContent = "✅ About color saved!";
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          document.getElementById("colorMessageAbout").textContent = "❌ Failed to save About color.";
+          console.error("Error saving About color:", err);
+        });
+    }
+
+    // 🌈 Load Saved About Color on Page Load
+    window.onload = () => {
+      fetch("http://localhost:2000/colorabout")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("colorPickerAbout").value = data.color;
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          console.error("Error loading About color:", err);
+        });
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Page - Color Customization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      text-align: center;
+      background-color: #ffffff;
+    }
+    .section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 50px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>📞 Customize Contact Background Color</h2>
+    <input type="color" id="colorPickerContact" />
+    <button onclick="saveContactColor()">Save Contact Color</button>
+    <div class="status" id="colorMessageContact"></div>
+  </div>
+
+  <script>
+    // 🎨 Save Contact Color to Server
+    function saveContactColor() {
+      const color = document.getElementById("colorPickerContact").value;
+      fetch("http://localhost:2000/colorcontact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ color })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("colorMessageContact").textContent = "✅ Contact color saved!";
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          document.getElementById("colorMessageContact").textContent = "❌ Failed to save contact color.";
+          console.error("Error saving contact color:", err);
+        });
+    }
+
+    // 🌈 Fetch Saved Contact Color on Page Load
+    window.onload = () => {
+      fetch("http://localhost:2000/colorcontact")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("colorPickerContact").value = data.color;
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          console.error("Error loading contact color:", err);
+        });
+    };
+  </script>
+
+</body>
+</html>

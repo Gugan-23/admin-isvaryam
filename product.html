@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Page - Color Customization</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      text-align: center;
+      background-color: #ffffff;
+    }
+    .section {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 50px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      display: inline-block;
+    }
+    input, button {
+      margin: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+    }
+    .status {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h2>🛍️ Customize Product Page Background Color</h2>
+    <input type="color" id="colorPickerProduct" />
+    <button onclick="saveProductColor()">Save Product Color</button>
+    <div class="status" id="colorMessageProduct"></div>
+  </div>
+
+  <script>
+    // Save Product Color to Server
+    function saveProductColor() {
+      const color = document.getElementById("colorPickerProduct").value;
+      fetch("http://localhost:2000/colorproduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ color })
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Network error");
+          return res.json();
+        })
+        .then(data => {
+          document.getElementById("colorMessageProduct").textContent = "✅ Product color saved!";
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          document.getElementById("colorMessageProduct").textContent = "❌ Failed to save product color.";
+          console.error("Error saving product color:", err);
+        });
+    }
+
+    // Fetch Saved Product Color on Page Load
+    window.onload = () => {
+      fetch("http://localhost:2000/colorproduct")
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("colorPickerProduct").value = data.color;
+          document.body.style.backgroundColor = data.color;
+        })
+        .catch(err => {
+          console.error("Error loading product color:", err);
+        });
+    };
+  </script>
+
+</body>
+</html>
