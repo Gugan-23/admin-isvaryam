@@ -249,8 +249,34 @@ app.post('/colorproduct', async (req, res) => {
     }
 });
 
+// HEADER
+
+// GET Header Color
+app.get('/colorheader', async (req, res) => {
+    try {
+        const color = await getColor('header');
+        res.json({ color });
+    } catch (err) {
+        console.error("❌ Failed to get header color:", err);
+        res.status(500).json({ error: 'Failed to get header color', details: err });
+    }
+});
+
+// POST (Update) Header Color
+app.post('/colorheader', async (req, res) => {
+    try {
+        const color = await setColor('header', req.body.color || '#ffffff');
+        console.log("✅ Header color updated:", color);
+        res.json({ message: 'Header color updated successfully', color });
+    } catch (err) {
+        console.error("❌ Failed to update header color:", err);
+        res.status(500).json({ error: 'Failed to update header color', details: err });
+    }
+});
+
 // Start server
 const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
