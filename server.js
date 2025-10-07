@@ -19,6 +19,12 @@ const ImageSchema = new mongoose.Schema({
 
 const Image = mongoose.model('Image', ImageSchema);
 
+const ImageSchema2 = new mongoose.Schema({
+    imageUrl: String,
+    publicId: String,
+});
+
+const Image2 = mongoose.model('Image2', ImageSchema2);
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -97,6 +103,43 @@ const setColor = async (page, color) => {
     return updated.color;
 };
 
+
+
+app.post('/upload2', upload.single('image'), async (req, res) => {
+    try {
+        const image = new Image2({
+            imageUrl: req.file.path,
+            publicId: req.file.filename,
+        });
+        await image.save();
+        res.status(200).json({ message: 'Image uploaded successfully', data: image });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error uploading image' });
+    }
+});
+
+// Fetch all images
+app.get('/images2', async (req, res) => {
+    try {
+        const images = await Image2.find();
+        res.status(200).json(images);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching images' });
+    }
+});
+// ✅ Fix: use URL parameters to match your frontend call
+app.delete('/delete2/:id/:cloudinaryId', async (req, res) => {
+  try {
+    const { id, cloudinaryId } = req.params;
+    await cloudinary.uploader.destroy(cloudinaryId);
+    await Image2.findByIdAndDelete(id);
+    res.json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Deletion failed', details: error });
+  }
+});
 // 🎨 Background color routes
 
 // HOME
@@ -279,5 +322,4 @@ const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
 
