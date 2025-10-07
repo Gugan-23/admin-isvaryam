@@ -45,7 +45,7 @@ const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
         folder: 'uploads',
-        allowed_formats: ['jpg', 'png', 'jpeg','svg'],
+        allowed_formats: ['jpg', 'png', 'jpeg','svg','webp'],
     },
 });
 
@@ -322,4 +322,5 @@ const PORT = process.env.PORT || 2000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
 
